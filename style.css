@@ -37,6 +37,9 @@ body { margin: 0; color: var(--ink); background: var(--paper); font-family: 'Ass
 .ai-input-row button:hover { background: rgba(212,242,61,.1); }
 .ai-input-row button span { font-size: 15px; margin-right: 4px; }
 .ai-answer { color: #bac5bd; font-size: 12px; line-height: 1.6; margin: 11px 0 0; min-height: 19px; }
+.random-button { width: 100%; border: 1px solid var(--orange); background: transparent; color: var(--orange); padding: 11px 14px; display: flex; justify-content: space-between; align-items: center; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1.5px; font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: background .2s, color .2s; }
+.random-button:hover { background: var(--orange); color: #171312; }
+.random-button b { font-size: 16px; }
 .ai-tip { color: #7f9288; font-size: 10px; line-height: 1.5; margin-top: 6px; }
 .ai-results { display: grid; gap: 7px; margin-top: 12px; }
 .online-mod { display: flex; align-items: center; gap: 10px; border-top: 1px solid #2d3933; padding-top: 9px; text-decoration: none; }

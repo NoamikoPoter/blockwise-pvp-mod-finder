@@ -225,6 +225,26 @@ async function askLocalAi() {
   }
 }
 
+async function pickRandomMod() {
+  aiAnswer.textContent = 'מחפש מוד אקראי ומעניין בשבילך...';
+  aiResults.innerHTML = '<span class="online-mod-meta">מגריל מתוך מודים של Modrinth...</span>';
+  try {
+    const facets = encodeURIComponent('[["project_type:mod"]]');
+    const response = await fetch(`https://api.modrinth.com/v2/search?query=${encodeURIComponent('minecraft fun guns weapons tools herobrine')}&facets=${facets}&limit=100&index=relevance`);
+    if (!response.ok) throw new Error('Random mod search failed');
+    const data = await response.json();
+    const mods = (data.hits || []).filter((mod) => mod.project_type === 'mod');
+    if (!mods.length) throw new Error('No random mod found');
+    const randomMod = mods[Math.floor(Math.random() * mods.length)];
+    renderOnlineMods([randomMod]);
+    aiAnswer.textContent = `המוד האקראי שלך היום הוא ${randomMod.title}. אם הוא מעניין אותך, פתח את הכרטיס כדי לראות פרטים והורדה.`;
+    aiTip.textContent = 'בדוק לפני התקנה את ה-loader, גרסת Minecraft, הרשאות השרת והאם המוד מתאים לשחקן יחיד או למולטיפלייר.';
+  } catch {
+    aiAnswer.textContent = 'לא הצלחתי להגריל מוד כרגע. נסה שוב בעוד רגע.';
+    aiResults.innerHTML = '';
+  }
+}
+
 function renderMods() {
   const selected = modSets[styleSelect.value];
   const priority = document.querySelector('.chip.selected')?.dataset.priority;
@@ -278,6 +298,7 @@ document.querySelector('#versionButton').addEventListener('click', () => {
   label.textContent = label.textContent === '1.21.1' ? '1.20.4' : '1.21.1';
 });
 document.querySelector('#aiAskButton').addEventListener('click', askLocalAi);
+document.querySelector('#randomModButton').addEventListener('click', pickRandomMod);
 aiQuestion.addEventListener('keydown', (event) => {
   if (event.key === 'Enter') askLocalAi();
 });
