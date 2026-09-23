@@ -189,11 +189,15 @@ async function askLocalAi() {
     const hits = [...uniqueMods.values()]
       .sort((a, b) => scoreOnlineMod(b, question, requestedLoader, version) - scoreOnlineMod(a, question, requestedLoader, version))
       .slice(0, 12);
-    const redditQuery = encodeURIComponent(question || searchQueries[0]);
-    const redditResponse = await fetch(`https://www.reddit.com/search.json?q=${redditQuery}&limit=25&raw_json=1`);
-    const redditData = redditResponse.ok ? await redditResponse.json() : { data: { children: [] } };
-    const redditPosts = (redditData.data?.children || []).map((item) => item.data).filter((post) => post && post.title && post.permalink);
-    if (!hits.length && !redditPosts.length) throw new Error('No sources found');
+    let redditPosts = [];
+    try {
+      const redditQuery = encodeURIComponent(question || searchQueries[0]);
+      const redditResponse = await fetch(`https://www.reddit.com/search.json?q=${redditQuery}&limit=25&raw_json=1`);
+      const redditData = redditResponse.ok ? await redditResponse.json() : { data: { children: [] } };
+      redditPosts = (redditData.data?.children || []).map((item) => item.data).filter((post) => post && post.title && post.permalink);
+    } catch {
+      redditPosts = [];
+    }
     renderOnlineMods(hits);
     aiResults.insertAdjacentHTML('beforeend', renderRedditResults(redditPosts));
     aiResults.insertAdjacentHTML('beforeend', renderYoutubeSearch(question || searchQueries[0]));
