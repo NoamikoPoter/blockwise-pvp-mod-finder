@@ -87,6 +87,7 @@ const priorityChips = document.querySelectorAll('.chip');
 const aiQuestion = document.querySelector('#aiQuestion');
 const aiAnswer = document.querySelector('#aiAnswer');
 const aiResults = document.querySelector('#aiResults');
+const aiTip = document.querySelector('#aiTip');
 
 const onlineQueries = {
   crystal: 'crystal pvp minecraft',
@@ -118,7 +119,10 @@ function getLocalAiRecommendation() {
 function renderOnlineMods(hits) {
   aiResults.innerHTML = hits.map((mod, index) => {
     const description = (mod.description || 'מוד PvP שנמצא בחיפוש.').replace(/<[^>]*>/g, '').slice(0, 130);
-    return `<a class="online-mod" href="https://modrinth.com/mod/${mod.slug}" target="_blank" rel="noopener"><span class="online-mod-rank">0${index + 1}</span><span><span class="online-mod-name">${mod.title}</span><br><span class="online-mod-meta">${description}${mod.downloads ? ` · ${mod.downloads.toLocaleString()} הורדות` : ''}</span></span><span class="banner-arrow">↗</span></a>`;
+    const loaders = (mod.categories || []).filter((category) => ['fabric', 'forge', 'quilt', 'neoforge'].includes(category)).join(', ') || 'לא צוין';
+    const versions = (mod.versions || []).slice(-3).join(', ') || 'לא צוין';
+    const downloads = mod.downloads ? `${mod.downloads.toLocaleString()} הורדות` : 'אין נתון הורדות';
+    return `<a class="online-mod" href="https://modrinth.com/mod/${mod.slug}" target="_blank" rel="noopener"><span class="online-mod-rank">0${index + 1}</span><span><span class="online-mod-name">${mod.title}</span><br><span class="online-mod-meta">${description}</span><span class="online-mod-details">${loaders} · גרסאות: ${versions} · ${downloads}</span></span><span class="banner-arrow">↗</span></a>`;
   }).join('');
 }
 
@@ -133,12 +137,17 @@ async function askLocalAi() {
     const response = await fetch(url);
     if (!response.ok) throw new Error('Online search failed');
     const data = await response.json();
-    const hits = data.hits.filter((mod) => mod.project_type === 'mod');
+    const requestedLoader = loaderSelect.value;
+    const compatibleHits = data.hits.filter((mod) => mod.project_type === 'mod' && (mod.categories || []).includes(requestedLoader));
+    const hits = compatibleHits.length ? compatibleHits : data.hits.filter((mod) => mod.project_type === 'mod');
     if (!hits.length) throw new Error('No mods found');
     renderOnlineMods(hits);
-    aiAnswer.textContent += ' הנה הרשימה שמצאתי ב-Modrinth:';
+    const version = document.querySelector('#versionLabel').textContent;
+    aiAnswer.textContent += ` הנה ${hits.length} מודים שמצאתי ב-Modrinth שמתאימים ככל האפשר ל-${requestedLoader}.`;
+    aiTip.textContent = `בדיקה חשובה: התוצאות מציגות גרסאות זמינות כמו ${hits[0].versions?.slice(-3).join(', ') || 'לא ידוע'}, אבל לפני התקנה בדוק בעמוד המוד התאמה מדויקת ל-${version} ולשרת שלך.`;
   } catch {
     aiResults.innerHTML = '<span class="online-mod-meta">החיפוש באינטרנט לא זמין כרגע, אז הצגתי את ההמלצות המקומיות.</span>';
+    aiTip.textContent = 'כשהחיפוש יחזור, ה-AI יציג גם loader, גרסאות ומספר הורדות לכל מוד.';
   }
 }
 
