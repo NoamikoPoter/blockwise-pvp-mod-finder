@@ -233,7 +233,7 @@ async function pickRandomMod() {
   aiResults.innerHTML = '<span class="online-mod-meta">מגריל מתוך מודים של Modrinth...</span>';
   try {
     const facets = encodeURIComponent('[["project_type:mod"]]');
-    const queries = ['minecraft guns', 'herobrine minecraft', 'minecraft tools', 'fun minecraft mods', 'minecraft'];
+    const queries = ['minecraft guns', 'herobrine minecraft', 'animal morph minecraft', 'minecraft magic', 'minecraft mobs', 'minecraft dimensions', 'fun minecraft mods', 'minecraft'];
     const responses = await Promise.allSettled(queries.map(async (query) => {
       const response = await fetch(`https://api.modrinth.com/v2/search?query=${encodeURIComponent(query)}&facets=${facets}&limit=100&index=relevance`);
       if (!response.ok) throw new Error('Random mod search failed');
