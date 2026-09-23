@@ -247,8 +247,9 @@ async function pickRandomMod() {
     if (!mods.length) throw new Error('No random mod found');
     const randomMod = mods[Math.floor(Math.random() * mods.length)];
     renderOnlineMods([randomMod]);
-    aiAnswer.textContent = `המוד האקראי שלך היום הוא ${randomMod.title}. אם הוא מעניין אותך, פתח את הכרטיס כדי לראות פרטים והורדה.`;
-    aiTip.textContent = 'בדוק לפני התקנה את ה-loader, גרסת Minecraft, הרשאות השרת והאם המוד מתאים לשחקן יחיד או למולטיפלייר.';
+    aiResults.insertAdjacentHTML('beforeend', renderYoutubeSearch(randomMod.title));
+    aiAnswer.textContent = `המוד האקראי שלך היום הוא ${randomMod.title}. מצאתי גם חיפוש סרטוני YouTube של יוטיוברים שמדגימים אותו או מודים דומים.`;
+    aiTip.textContent = 'פתח את המוד כדי לבדוק גרסה ו-loader, ואז פתח את YouTube כדי לראות התקנה, סקירה וגיימפליי לפני שאתה מתקין.';
   } catch {
     aiAnswer.textContent = 'לא הצלחתי להגריל מוד כרגע. נסה שוב בעוד רגע.';
     aiResults.innerHTML = '';
