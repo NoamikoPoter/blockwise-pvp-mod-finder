@@ -79,6 +79,7 @@ const modSets = {
 
 const styleSelect = document.querySelector('#styleSelect');
 const loaderSelect = document.querySelector('#loaderSelect');
+const contentTypeSelect = document.querySelector('#contentTypeSelect');
 const modGrid = document.querySelector('#modGrid');
 const resultStatus = document.querySelector('#resultStatus');
 const resultNumber = document.querySelector('#resultNumber');
@@ -121,7 +122,7 @@ function scoreOnlineMod(mod, question, requestedLoader, version) {
   const words = question.toLowerCase().split(/\s+/).filter((word) => word.length > 2);
   let score = 0;
   words.forEach((word) => { if (text.includes(word)) score += 8; });
-  if ((mod.categories || []).includes(requestedLoader)) score += 6;
+  if (mod.project_type === 'mod' && (mod.categories || []).includes(requestedLoader)) score += 6;
   if ((mod.versions || []).includes(version)) score += 7;
   if ((mod.categories || []).some((category) => ['pvp', 'combat', 'utility', 'equipment'].includes(category))) score += 2;
   return score;
@@ -153,7 +154,9 @@ function renderOnlineMods(hits) {
     const loaders = (mod.categories || []).filter((category) => ['fabric', 'forge', 'quilt', 'neoforge'].includes(category)).join(', ') || 'לא צוין';
     const versions = (mod.versions || []).slice(-3).join(', ') || 'לא צוין';
     const downloads = mod.downloads ? `${mod.downloads.toLocaleString()} הורדות` : 'אין נתון הורדות';
-    return `<a class="online-mod" href="https://modrinth.com/mod/${mod.slug}" target="_blank" rel="noopener"><span class="online-mod-rank">0${index + 1}</span><span><span class="online-mod-name">${mod.title}</span><br><span class="online-mod-meta">${description}</span><span class="online-mod-details">${loaders} · גרסאות: ${versions} · ${downloads}</span></span><span class="banner-arrow">↗</span></a>`;
+    const projectPath = mod.project_type === 'modpack' ? 'modpack' : mod.project_type === 'resourcepack' ? 'resourcepack' : mod.project_type === 'shader' ? 'shader' : 'mod';
+    const projectLabel = projectPath === 'modpack' ? 'MODPACK' : projectPath === 'resourcepack' ? 'RESOURCE PACK' : projectPath === 'shader' ? 'SHADER' : 'MOD';
+    return `<a class="online-mod" href="https://modrinth.com/${projectPath}/${mod.slug}" target="_blank" rel="noopener"><span class="online-mod-rank">0${index + 1}</span><span><span class="online-mod-name">${mod.title}</span><br><span class="online-mod-meta">${projectLabel} · ${description}</span><span class="online-mod-details">${loaders} · גרסאות: ${versions} · ${downloads}</span></span><span class="banner-arrow">↗</span></a>`;
   }).join('');
 }
 
@@ -172,19 +175,21 @@ async function askLocalAi() {
   aiResults.innerHTML = '<span class="online-mod-meta">מחפש במאגר המודים ובדיוני הקהילה...</span>';
   const question = aiQuestion.value.trim();
   const searchQueries = getOnlineSearchQueries(question);
+  const requestedType = contentTypeSelect.value;
   try {
-    const facets = encodeURIComponent('[["project_type:mod"]]');
+    const facets = requestedType === 'all' ? '' : encodeURIComponent(`[["project_type:${requestedType}"]]`);
     const requestedLoader = loaderSelect.value;
     const version = document.querySelector('#versionLabel').textContent;
     const responses = await Promise.allSettled(searchQueries.map(async (query) => {
-      const url = `https://api.modrinth.com/v2/search?query=${encodeURIComponent(query)}&facets=${facets}&limit=100&index=relevance`;
+      const facetQuery = facets ? `&facets=${facets}` : '';
+      const url = `https://api.modrinth.com/v2/search?query=${encodeURIComponent(query)}${facetQuery}&limit=100&index=relevance`;
       const response = await fetch(url);
       if (!response.ok) throw new Error('Online search failed');
       return response.json();
     }));
     const uniqueMods = new Map();
     responses.filter((result) => result.status === 'fulfilled').flatMap((result) => result.value.hits || []).forEach((mod) => {
-      if (mod.project_type === 'mod' && !uniqueMods.has(mod.project_id)) uniqueMods.set(mod.project_id, mod);
+      if ((requestedType === 'all' || mod.project_type === requestedType) && !uniqueMods.has(mod.project_id)) uniqueMods.set(mod.project_id, mod);
     });
     const hits = [...uniqueMods.values()]
       .sort((a, b) => scoreOnlineMod(b, question, requestedLoader, version) - scoreOnlineMod(a, question, requestedLoader, version))
@@ -201,8 +206,9 @@ async function askLocalAi() {
     renderOnlineMods(hits);
     aiResults.insertAdjacentHTML('beforeend', renderRedditResults(redditPosts));
     aiResults.insertAdjacentHTML('beforeend', renderYoutubeSearch(question || searchQueries[0]));
-    aiAnswer.textContent += ` חיפשתי ${searchQueries.length} ניסוחים במאגר Modrinth, ב-Reddit וב-YouTube, ומצאתי ${hits.length} מודים ו-${redditPosts.length} דיוני קהילה.`;
-    aiTip.textContent = `ה-AI בדק עד ${searchQueries.length * 100} תוצאות מודים, הסיר כפילויות ודירג לפי מילות השאלה, loader וגרסת ${version}. דיוני Reddit הם רעיונות מהקהילה, לכן בדוק תמיד את עמוד המוד וההרשאות שלו.`;
+    const contentLabel = requestedType === 'modpack' ? 'modpacks' : requestedType === 'resourcepack' ? 'resource packs' : requestedType === 'shader' ? 'shaders' : requestedType === 'all' ? 'סוגי תוכן' : 'מודים';
+    aiAnswer.textContent += ` חיפשתי ${searchQueries.length} ניסוחים במאגר Modrinth, ב-Reddit וב-YouTube, ומצאתי ${hits.length} ${contentLabel} ו-${redditPosts.length} דיוני קהילה.`;
+    aiTip.textContent = `ה-AI בדק עד ${searchQueries.length * 100} תוצאות, הסיר כפילויות ודירג לפי מילות השאלה, סוג התוכן, loader וגרסת ${version}. דיוני Reddit הם רעיונות מהקהילה, לכן בדוק תמיד את עמוד התוכן וההרשאות שלו.`;
   } catch {
     aiResults.innerHTML = '<span class="online-mod-meta">החיפוש באינטרנט לא זמין כרגע, אז הצגתי את ההמלצות המקומיות.</span>';
     aiTip.textContent = 'כשהחיפוש יחזור, ה-AI יציג גם loader, גרסאות ומספר הורדות לכל מוד.';
@@ -239,6 +245,9 @@ priorityChips.forEach((chip) => chip.addEventListener('click', () => {
 }));
 styleSelect.addEventListener('change', renderMods);
 loaderSelect.addEventListener('change', renderMods);
+contentTypeSelect.addEventListener('change', () => {
+  aiTip.textContent = 'ה-AI יחפש את סוג התוכן שבחרת ב-Modrinth, יחד עם Reddit ו-YouTube.';
+});
 document.querySelector('#searchButton').addEventListener('click', () => {
   renderMods();
   document.querySelector('.results-panel').scrollIntoView({ behavior: 'smooth', block: 'center' });
