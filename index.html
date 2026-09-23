@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blockwise | יועץ מודים ל-PvP</title>
+  <meta name="description" content="מצא את המודים שמתאימים לסגנון ה-PvP שלך במיינקראפט.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="noise"></div>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="Blockwise דף הבית">
+      <span class="brand-mark">+</span>
+      <span>BLOCKWISE</span>
+    </a>
+    <nav class="topnav" aria-label="ניווט ראשי">
+      <a class="active" href="#finder">מאתר מודים</a>
+      <a href="#how">איך זה עובד</a>
+    </nav>
+    <button class="version-button" type="button" id="versionButton" aria-label="בחירת גרסת מיינקראפט">
+      <span class="online-dot"></span>
+      <span id="versionLabel">1.21.1</span>
+      <span class="chevron">⌄</span>
+    </button>
+  </header>
+
+  <main id="top">
+    <section class="hero" id="finder">
+      <div class="hero-copy">
+        <div class="eyebrow"><span></span> MOD LOADOUT BUILDER</div>
+        <h1>ה-PvP שלך.<br><em>היתרון שלך.</em></h1>
+        <p>ספר לנו איך אתה נלחם, ואנחנו נרכיב לך סט של מודים פחות מוכרים שבאמת נותנים ערך. בלי לנחש, בלי להוריד שטויות.</p>
+        <div class="hero-meta"><span class="meta-shield">◆</span> נבדק מול גרסאות פופולריות <b></b> עודכן היום</div>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="crosshair"></div>
+        <div class="pixel-spark spark-a">✦</div>
+        <div class="pixel-spark spark-b">✦</div>
+        <div class="diamond diamond-back"></div>
+        <div class="diamond diamond-front"></div>
+        <div class="hero-label">CRYSTAL<br><strong>READY</strong></div>
+      </div>
+    </section>
+
+    <section class="workspace" aria-label="מציאת מודים">
+      <aside class="filters-panel">
+        <div class="panel-title-row">
+          <div><span class="step-number">01</span><h2>הגדר את הסטייל</h2></div>
+          <span class="filter-count" id="filterCount">4 פילטרים</span>
+        </div>
+        <div class="filter-group">
+          <label for="styleSelect">סגנון PvP</label>
+          <div class="select-wrap">
+            <select id="styleSelect">
+              <option value="crystal">Crystal PvP</option>
+              <option value="sword">Sword PvP</option>
+              <option value="bed">Bedwars / Bed PvP</option>
+              <option value="uhc">UHC / Survival PvP</option>
+            </select>
+          </div>
+        </div>
+        <div class="filter-group">
+          <label>מה חשוב לך?</label>
+          <div class="chip-list" id="priorityChips">
+            <button class="chip selected" type="button" data-priority="combat">קרב</button>
+            <button class="chip" type="button" data-priority="performance">FPS</button>
+            <button class="chip" type="button" data-priority="visual">נראות</button>
+            <button class="chip" type="button" data-priority="utility">שימושיות</button>
+          </div>
+        </div>
+        <div class="filter-group">
+          <label for="loaderSelect">סוג התקנה</label>
+          <div class="select-wrap">
+            <select id="loaderSelect">
+              <option value="fabric">Fabric</option>
+              <option value="forge">Forge</option>
+              <option value="quilt">Quilt</option>
+            </select>
+          </div>
+        </div>
+        <button class="search-button" type="button" id="searchButton"><span>מצאו לי את המודים</span><b>←</b></button>
+        <p class="fine-print">המלצות הן כלי עזר. בדוק תמיד תאימות לגרסה שלך לפני התקנה.</p>
+      </aside>
+
+      <section class="results-panel" aria-live="polite">
+        <div class="results-heading">
+          <div>
+            <span class="step-number">02</span>
+            <h2>הסט הנסתר שלך</h2>
+          </div>
+          <span class="result-status"><i></i><span id="resultStatus">4 התאמות נמצאו</span></span>
+        </div>
+        <div class="recommendation-banner" id="recommendationBanner">
+          <span class="banner-icon">✦</span>
+          <div><strong>הבחירה של Blockwise</strong><p id="bannerText">Marlow Crystal הוא נקודת פתיחה חזקה ל-Crystal PvP.</p></div>
+          <span class="banner-arrow">↗</span>
+        </div>
+        <div class="ai-helper" id="aiHelper">
+          <div class="ai-heading"><span class="ai-spark">✦</span><div><strong>Blockwise AI</strong><p>עוזר לך לבחור לפי מה שבאמת חסר לך.</p></div><span class="ai-live">LOCAL AI</span></div>
+          <div class="ai-input-row"><input id="aiQuestion" type="text" placeholder="לדוגמה: אני צריך יותר שליטה בקרב..." aria-label="שאלה לעוזר ה-AI"><button id="aiAskButton" type="button">שאל את ה-AI <span>↗</span></button></div>
+          <p class="ai-answer" id="aiAnswer">בחר סגנון ועדיפות, או כתוב לי מה אתה מחפש.</p>
+          <div class="ai-results" id="aiResults"></div>
+        </div>
+        <div class="mod-grid" id="modGrid"></div>
+        <div class="results-footer"><span><strong id="resultNumber">04</strong> מודים בסט</span><button class="share-button" type="button" id="shareButton">שיתוף הסט <span>↗</span></button></div>
+      </section>
+    </section>
+
+    <section class="how-section" id="how">
+      <div><span class="eyebrow"><span></span> THREE SIMPLE STEPS</span><h2>פחות חיפוש.<br><em>יותר משחק.</em></h2></div>
+      <div class="steps"><div class="step"><strong>01</strong><h3>בחר סגנון</h3><p>Crystal, Sword, Bed או UHC.</p></div><div class="step"><strong>02</strong><h3>בחר עדיפויות</h3><p>כוח, FPS, נראות או נוחות.</p></div><div class="step"><strong>03</strong><h3>קבל את הסט</h3><p>מודים מדורגים שמתאימים לדרך שלך.</p></div></div>
+    </section>
+  </main>
+  <footer><span>BLOCKWISE / BUILT FOR BETTER FIGHTS</span><span>© 2025</span></footer>
+  <script src="app.js"></script>
+</body>
+</html>
