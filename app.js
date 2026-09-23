@@ -89,6 +89,9 @@ const aiQuestion = document.querySelector('#aiQuestion');
 const aiAnswer = document.querySelector('#aiAnswer');
 const aiResults = document.querySelector('#aiResults');
 const aiTip = document.querySelector('#aiTip');
+const createPanel = document.querySelector('#createPanel');
+const createPrompt = document.querySelector('#createPrompt');
+const createResult = document.querySelector('#createResult');
 
 const onlineQueries = {
   crystal: 'crystal pvp minecraft',
@@ -230,10 +233,17 @@ async function pickRandomMod() {
   aiResults.innerHTML = '<span class="online-mod-meta">מגריל מתוך מודים של Modrinth...</span>';
   try {
     const facets = encodeURIComponent('[["project_type:mod"]]');
-    const response = await fetch(`https://api.modrinth.com/v2/search?query=${encodeURIComponent('minecraft fun guns weapons tools herobrine')}&facets=${facets}&limit=100&index=relevance`);
-    if (!response.ok) throw new Error('Random mod search failed');
-    const data = await response.json();
-    const mods = (data.hits || []).filter((mod) => mod.project_type === 'mod');
+    const queries = ['minecraft guns', 'herobrine minecraft', 'minecraft tools', 'fun minecraft mods', 'minecraft'];
+    const responses = await Promise.allSettled(queries.map(async (query) => {
+      const response = await fetch(`https://api.modrinth.com/v2/search?query=${encodeURIComponent(query)}&facets=${facets}&limit=100&index=relevance`);
+      if (!response.ok) throw new Error('Random mod search failed');
+      return response.json();
+    }));
+    const uniqueMods = new Map();
+    responses.filter((result) => result.status === 'fulfilled').flatMap((result) => result.value.hits || []).forEach((mod) => {
+      if (mod.project_type === 'mod' && !uniqueMods.has(mod.project_id)) uniqueMods.set(mod.project_id, mod);
+    });
+    const mods = [...uniqueMods.values()];
     if (!mods.length) throw new Error('No random mod found');
     const randomMod = mods[Math.floor(Math.random() * mods.length)];
     renderOnlineMods([randomMod]);
@@ -243,6 +253,31 @@ async function pickRandomMod() {
     aiAnswer.textContent = 'לא הצלחתי להגריל מוד כרגע. נסה שוב בעוד רגע.';
     aiResults.innerHTML = '';
   }
+}
+
+function createModBlueprint() {
+  const prompt = createPrompt.value.trim();
+  if (!prompt) {
+    createResult.textContent = 'כתוב קודם איזה מוד אתה רוצה ליצור.';
+    return;
+  }
+  const normalized = prompt.toLowerCase();
+  const loader = document.querySelector('#createLoader').value;
+  const version = document.querySelector('#versionLabel').textContent;
+  const isGun = normalized.includes('gun') || normalized.includes('רוב') || normalized.includes('נשק');
+  const isHerobrine = normalized.includes('herobrine') || normalized.includes('הירובריין');
+  const isCrystal = normalized.includes('crystal') || normalized.includes('קריסטל');
+  const features = [];
+  if (isGun) features.push('מערכת נשקים, תחמושת ו-reload');
+  if (isHerobrine) features.push('אירועי הופעה ואויב מסתורי בלילה');
+  if (isCrystal) features.push('אינטראקציות מיוחדות עם Crystal PvP');
+  if (!features.length) features.push('מערכת בסיסית לפי הרעיון שלך', 'הגדרות במשחק', 'קובץ README עם הוראות');
+  const title = isGun ? 'Blockwise Arsenal' : isHerobrine ? 'Blockwise: The Hidden One' : isCrystal ? 'Blockwise Crystal Lab' : 'Blockwise Custom Idea';
+  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const blueprint = { name: title, slug, idea: prompt, loader, minecraftVersion: version, features, files: ['fabric.mod.json', 'src/main/java/ModInitializer.java', 'src/main/resources/assets/mod/lang/en_us.json', 'README.md'], note: 'This is a generated project blueprint. Compile it with the selected loader to create an installable .jar.' };
+  const file = new Blob([JSON.stringify(blueprint, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(file);
+  createResult.innerHTML = `<span class="blueprint-title">${title}</span><span class="blueprint-meta">${loader} · Minecraft ${version} · Blueprint מוכן</span><ul class="blueprint-features">${features.map((feature) => `<li>${feature}</li>`).join('')}</ul><a class="download-blueprint" href="${url}" download="${slug}-blueprint.json">הורד Blueprint להתקנה ↗</a><span class="blueprint-meta">אחרי ההורדה צריך build של פרויקט ${loader} כדי לקבל קובץ .jar.</span>`;
 }
 
 function renderMods() {
@@ -299,6 +334,14 @@ document.querySelector('#versionButton').addEventListener('click', () => {
 });
 document.querySelector('#aiAskButton').addEventListener('click', askLocalAi);
 document.querySelector('#randomModButton').addEventListener('click', pickRandomMod);
+document.querySelector('#createModeButton').addEventListener('click', () => {
+  createPanel.hidden = !createPanel.hidden;
+  if (!createPanel.hidden) {
+    createPanel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    createPrompt.focus();
+  }
+});
+document.querySelector('#generateModButton').addEventListener('click', createModBlueprint);
 aiQuestion.addEventListener('keydown', (event) => {
   if (event.key === 'Enter') askLocalAi();
 });
