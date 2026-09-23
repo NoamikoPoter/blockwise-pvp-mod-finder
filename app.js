@@ -82,6 +82,7 @@ const loaderSelect = document.querySelector('#loaderSelect');
 const contentTypeSelect = document.querySelector('#contentTypeSelect');
 const versionSelect = document.querySelector('#versionSelect');
 const newestVersions = ['26.3', '26.2', '26.1.2', '26.1.1', '26.1'];
+const allMinecraftVersions = [...newestVersions, '1.21.11', '1.21.10', '1.21.9', '1.21.8', '1.21.7', '1.21.6', '1.21.5', '1.21.4', '1.21.3', '1.21.2', '1.21.1', '1.21', '1.20.6', '1.20.4', '1.20.2', '1.20.1', '1.19.4', '1.19.3', '1.19.2', '1.19.1', '1.19', '1.18.2', '1.18.1', '1.18', '1.17.1', '1.16.5', '1.15.2', '1.14.4', '1.13.2', '1.12.2', '1.11.2', '1.10.2', '1.9.4', '1.8.9'];
 newestVersions.forEach((version) => {
   if (![...versionSelect.options].some((option) => option.value === version)) {
     versionSelect.insertBefore(new Option(version, version), versionSelect.firstElementChild);
@@ -89,6 +90,15 @@ newestVersions.forEach((version) => {
   const versionList = document.querySelector('#minecraftVersions');
   if (versionList && ![...versionList.options].some((option) => option.value === version)) versionList.insertBefore(new Option(version, version), versionList.firstElementChild);
 });
+const createVersionInput = document.querySelector('#createVersion');
+if (createVersionInput) {
+  const createVersionSelect = document.createElement('select');
+  createVersionSelect.id = 'createVersion';
+  createVersionSelect.setAttribute('aria-label', 'Minecraft version for generated mod');
+  allMinecraftVersions.forEach((version) => createVersionSelect.add(new Option(version, version)));
+  createVersionSelect.value = createVersionInput.value || '1.21.1';
+  createVersionInput.replaceWith(createVersionSelect);
+}
 const modGrid = document.querySelector('#modGrid');
 const resultStatus = document.querySelector('#resultStatus');
 const resultNumber = document.querySelector('#resultNumber');
@@ -243,7 +253,7 @@ async function pickRandomMod() {
   aiResults.innerHTML = '<span class="online-mod-meta">מגריל מתוך מודים של Modrinth...</span>';
   try {
     const facets = encodeURIComponent('[["project_type:mod"]]');
-    const queries = ['minecraft guns', 'herobrine minecraft', 'animal morph minecraft', 'minecraft magic', 'minecraft mobs', 'minecraft dimensions', 'fun minecraft mods', 'minecraft'];
+    const queries = ['minecraft guns', 'herobrine minecraft', 'animal morph minecraft', 'minecraft magic', 'minecraft mobs', 'minecraft dimensions', 'minecraft vehicles', 'minecraft bosses', 'minecraft furniture', 'best minecraft mods', 'minecraft mod showcase', 'fun minecraft mods', 'minecraft'];
     const responses = await Promise.allSettled(queries.map(async (query) => {
       const response = await fetch(`https://api.modrinth.com/v2/search?query=${encodeURIComponent(query)}&facets=${facets}&limit=100&index=relevance`);
       if (!response.ok) throw new Error('Random mod search failed');
@@ -255,10 +265,11 @@ async function pickRandomMod() {
     });
     const mods = [...uniqueMods.values()];
     if (!mods.length) throw new Error('No random mod found');
-    const randomMod = mods[Math.floor(Math.random() * mods.length)];
-    renderOnlineMods([randomMod]);
-    aiResults.insertAdjacentHTML('beforeend', renderYoutubeSearch(randomMod.title));
-    aiAnswer.textContent = `המוד האקראי שלך היום הוא ${randomMod.title}. מצאתי גם חיפוש סרטוני YouTube של יוטיוברים שמדגימים אותו או מודים דומים.`;
+    const randomMods = [...mods].sort(() => Math.random() - 0.5).slice(0, 3);
+    renderOnlineMods(randomMods);
+    aiResults.insertAdjacentHTML('beforeend', '<div class="source-heading">סרטוני YouTube של יוטיוברים</div>');
+    randomMods.forEach((mod) => aiResults.insertAdjacentHTML('beforeend', renderYoutubeSearch(mod.title)));
+    aiAnswer.textContent = `הנה ${randomMods.length} מודים מגניבים שמצאתי בחיפושי Modrinth ובנושאים שמופיעים בסרטוני YouTube. לכל מוד יש חיפוש סרטונים משלו.`;
     aiTip.textContent = 'פתח את המוד כדי לבדוק גרסה ו-loader, ואז פתח את YouTube כדי לראות התקנה, סקירה וגיימפליי לפני שאתה מתקין.';
   } catch {
     aiAnswer.textContent = 'לא הצלחתי להגריל מוד כרגע. נסה שוב בעוד רגע.';
