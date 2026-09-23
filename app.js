@@ -97,7 +97,7 @@ const onlineQueries = {
 };
 
 const aiSearchKnowledge = [
-  { words: ['fast respawn anchor', 'respawn anchor', 'anchor pvp', 'אנקר', 'עוגן'], queries: ['respawn anchor', 'anchor pvp', 'crystal pvp'] },
+  { words: ['fast respawn anchor', 'fast respawn ancher', 'respawn anchor', 'respawn ancher', 'anchor pvp', 'אנקר', 'עוגן'], queries: ['respawn anchor', 'anchor pvp', 'crystal pvp'] },
   { words: ['crystal', 'קריסטל'], queries: ['crystal pvp', 'crystal optimizer', 'client side crystals'] },
   { words: ['totem', 'טוטם'], queries: ['totem pvp', 'totem hud', 'inventory hud'] },
   { words: ['armor', 'armour', 'שריון'], queries: ['armor hud', 'armor durability', 'pvp hud'] },
@@ -157,32 +157,48 @@ function renderOnlineMods(hits) {
   }).join('');
 }
 
+function renderRedditResults(posts) {
+  if (!posts.length) return '';
+  return `<div class="source-heading">דיונים שמצאתי ב-Reddit</div>${posts.slice(0, 8).map((post, index) => `<a class="online-mod reddit-mod" href="https://www.reddit.com${post.permalink}" target="_blank" rel="noopener"><span class="online-mod-rank">R${index + 1}</span><span><span class="online-mod-name">${post.title}</span><span class="online-mod-details">r/${post.subreddit} · ${post.num_comments || 0} תגובות · דיון מהקהילה</span></span><span class="banner-arrow">↗</span></a>`).join('')}`;
+}
+
+function renderYoutubeSearch(query) {
+  const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(`${query} minecraft pvp mod`)}`;
+  return `<div class="source-heading">סרטוני YouTube למדריכים והדגמות</div><a class="online-mod youtube-mod" href="${youtubeUrl}" target="_blank" rel="noopener"><span class="online-mod-rank">YT</span><span><span class="online-mod-name">חפש סרטוני ${query}</span><span class="online-mod-details">מדריכי התקנה, בדיקות PvP והדגמות מהקהילה</span></span><span class="banner-arrow">↗</span></a>`;
+}
+
 async function askLocalAi() {
   aiAnswer.textContent = getLocalAiRecommendation();
-  aiResults.innerHTML = '<span class="online-mod-meta">מחפש מודים אמיתיים ב-Modrinth...</span>';
+  aiResults.innerHTML = '<span class="online-mod-meta">מחפש במאגר המודים ובדיוני הקהילה...</span>';
   const question = aiQuestion.value.trim();
   const searchQueries = getOnlineSearchQueries(question);
   try {
     const facets = encodeURIComponent('[["project_type:mod"]]');
     const requestedLoader = loaderSelect.value;
     const version = document.querySelector('#versionLabel').textContent;
-    const responses = await Promise.all(searchQueries.map(async (query) => {
-      const url = `https://api.modrinth.com/v2/search?query=${encodeURIComponent(query)}&facets=${facets}&limit=8&index=relevance`;
+    const responses = await Promise.allSettled(searchQueries.map(async (query) => {
+      const url = `https://api.modrinth.com/v2/search?query=${encodeURIComponent(query)}&facets=${facets}&limit=100&index=relevance`;
       const response = await fetch(url);
       if (!response.ok) throw new Error('Online search failed');
       return response.json();
     }));
     const uniqueMods = new Map();
-    responses.flatMap((data) => data.hits || []).forEach((mod) => {
+    responses.filter((result) => result.status === 'fulfilled').flatMap((result) => result.value.hits || []).forEach((mod) => {
       if (mod.project_type === 'mod' && !uniqueMods.has(mod.project_id)) uniqueMods.set(mod.project_id, mod);
     });
     const hits = [...uniqueMods.values()]
       .sort((a, b) => scoreOnlineMod(b, question, requestedLoader, version) - scoreOnlineMod(a, question, requestedLoader, version))
       .slice(0, 12);
-    if (!hits.length) throw new Error('No mods found');
+    const redditQuery = encodeURIComponent(question || searchQueries[0]);
+    const redditResponse = await fetch(`https://www.reddit.com/search.json?q=${redditQuery}&limit=25&raw_json=1`);
+    const redditData = redditResponse.ok ? await redditResponse.json() : { data: { children: [] } };
+    const redditPosts = (redditData.data?.children || []).map((item) => item.data).filter((post) => post && post.title && post.permalink);
+    if (!hits.length && !redditPosts.length) throw new Error('No sources found');
     renderOnlineMods(hits);
-    aiAnswer.textContent += ` חיפשתי ${searchQueries.length} ניסוחים שונים ומצאתי ${hits.length} מודים ב-Modrinth שמתאימים ככל האפשר ל-${requestedLoader}.`;
-    aiTip.textContent = `ה-AI בדק עד ${searchQueries.length * 8} תוצאות, הסיר כפילויות ודירג לפי מילים מהשאלה, loader וגרסת ${version}. בדוק תמיד את עמוד המוד לפני התקנה.`;
+    aiResults.insertAdjacentHTML('beforeend', renderRedditResults(redditPosts));
+    aiResults.insertAdjacentHTML('beforeend', renderYoutubeSearch(question || searchQueries[0]));
+    aiAnswer.textContent += ` חיפשתי ${searchQueries.length} ניסוחים במאגר Modrinth, ב-Reddit וב-YouTube, ומצאתי ${hits.length} מודים ו-${redditPosts.length} דיוני קהילה.`;
+    aiTip.textContent = `ה-AI בדק עד ${searchQueries.length * 100} תוצאות מודים, הסיר כפילויות ודירג לפי מילות השאלה, loader וגרסת ${version}. דיוני Reddit הם רעיונות מהקהילה, לכן בדוק תמיד את עמוד המוד וההרשאות שלו.`;
   } catch {
     aiResults.innerHTML = '<span class="online-mod-meta">החיפוש באינטרנט לא זמין כרגע, אז הצגתי את ההמלצות המקומיות.</span>';
     aiTip.textContent = 'כשהחיפוש יחזור, ה-AI יציג גם loader, גרסאות ומספר הורדות לכל מוד.';
