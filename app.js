@@ -80,6 +80,7 @@ const modSets = {
 const styleSelect = document.querySelector('#styleSelect');
 const loaderSelect = document.querySelector('#loaderSelect');
 const contentTypeSelect = document.querySelector('#contentTypeSelect');
+const versionSelect = document.querySelector('#versionSelect');
 const modGrid = document.querySelector('#modGrid');
 const resultStatus = document.querySelector('#resultStatus');
 const resultNumber = document.querySelector('#resultNumber');
@@ -192,7 +193,7 @@ async function askLocalAi() {
   try {
     const facets = apiType === 'all' ? '' : encodeURIComponent(`[["project_type:${apiType}"]]`);
     const requestedLoader = loaderSelect.value;
-    const version = document.querySelector('#versionLabel').textContent;
+    const version = versionSelect.value;
     const responses = await Promise.allSettled(searchQueries.map(async (query) => {
       const facetQuery = facets ? `&facets=${facets}` : '';
       const url = `https://api.modrinth.com/v2/search?query=${encodeURIComponent(query)}${facetQuery}&limit=100&index=relevance`;
@@ -204,9 +205,10 @@ async function askLocalAi() {
     responses.filter((result) => result.status === 'fulfilled').flatMap((result) => result.value.hits || []).forEach((mod) => {
       if ((apiType === 'all' || mod.project_type === apiType) && !uniqueMods.has(mod.project_id)) uniqueMods.set(mod.project_id, mod);
     });
-    const hits = [...uniqueMods.values()]
+    const rankedHits = [...uniqueMods.values()]
       .sort((a, b) => scoreOnlineMod(b, question, requestedLoader, version) - scoreOnlineMod(a, question, requestedLoader, version))
-      .slice(0, 12);
+    const versionHits = rankedHits.filter((mod) => (mod.versions || []).includes(version));
+    const hits = (versionHits.length ? versionHits : rankedHits).slice(0, 12);
     let redditPosts = [];
     try {
       const redditQuery = encodeURIComponent(question || searchQueries[0]);
@@ -264,7 +266,7 @@ function createModBlueprint() {
   }
   const normalized = prompt.toLowerCase();
   const loader = document.querySelector('#createLoader').value;
-  const version = document.querySelector('#createVersion').value.trim() || document.querySelector('#versionLabel').textContent;
+  const version = document.querySelector('#createVersion').value.trim() || versionSelect.value;
   const isGun = normalized.includes('gun') || normalized.includes('רוב') || normalized.includes('נשק');
   const isHerobrine = normalized.includes('herobrine') || normalized.includes('הירובריין');
   const isCrystal = normalized.includes('crystal') || normalized.includes('קריסטל');
@@ -329,9 +331,8 @@ document.querySelector('#shareButton').addEventListener('click', async () => {
     window.prompt('העתק את הסט שלך:', shareText);
   }
 });
-document.querySelector('#versionButton').addEventListener('click', () => {
-  const label = document.querySelector('#versionLabel');
-  label.textContent = label.textContent === '1.21.1' ? '1.20.4' : '1.21.1';
+versionSelect.addEventListener('change', () => {
+  aiTip.textContent = `החיפוש והיצירה יותאמו ל-Minecraft ${versionSelect.value}.`;
 });
 document.querySelector('#aiAskButton').addEventListener('click', askLocalAi);
 document.querySelector('#randomModButton').addEventListener('click', pickRandomMod);

@@ -21,11 +21,11 @@
       <a class="active" href="#finder">מאתר מודים</a>
       <a href="#how">איך זה עובד</a>
     </nav>
-    <button class="version-button" type="button" id="versionButton" aria-label="בחירת גרסת מיינקראפט">
+    <label class="version-button version-select" aria-label="בחירת גרסת מיינקראפט">
       <span class="online-dot"></span>
-      <span id="versionLabel">1.21.1</span>
+      <select id="versionSelect"><option value="1.21.11">1.21.11</option><option value="1.21.10">1.21.10</option><option value="1.21.9">1.21.9</option><option value="1.21.8">1.21.8</option><option value="1.21.7">1.21.7</option><option value="1.21.6">1.21.6</option><option value="1.21.5">1.21.5</option><option value="1.21.4">1.21.4</option><option value="1.21.3">1.21.3</option><option value="1.21.2">1.21.2</option><option value="1.21.1" selected>1.21.1</option><option value="1.21">1.21</option><option value="1.20.6">1.20.6</option><option value="1.20.4">1.20.4</option><option value="1.20.2">1.20.2</option><option value="1.20.1">1.20.1</option><option value="1.19.4">1.19.4</option><option value="1.19.3">1.19.3</option><option value="1.19.2">1.19.2</option><option value="1.19.1">1.19.1</option><option value="1.19">1.19</option><option value="1.18.2">1.18.2</option><option value="1.18.1">1.18.1</option><option value="1.18">1.18</option><option value="1.17.1">1.17.1</option><option value="1.16.5">1.16.5</option><option value="1.15.2">1.15.2</option><option value="1.14.4">1.14.4</option><option value="1.13.2">1.13.2</option><option value="1.12.2">1.12.2</option><option value="1.11.2">1.11.2</option><option value="1.10.2">1.10.2</option><option value="1.9.4">1.9.4</option><option value="1.8.9">1.8.9</option></select>
       <span class="chevron">⌄</span>
-    </button>
+    </label>
   </header>
 
   <main id="top">
@@ -124,7 +124,7 @@
         <div class="create-panel" id="createPanel" hidden>
           <div class="ai-heading"><span class="ai-spark">＋</span><div><strong>CREATE MODE</strong><p>תאר רעיון, וה-AI יהפוך אותו ל-Blueprint של מוד.</p></div><span class="ai-live">BUILD LAB</span></div>
           <textarea id="createPrompt" rows="3" placeholder="לדוגמה: מוד רובים עם reload, תחמושת ונשק נדיר..."></textarea>
-          <div class="create-options"><div class="create-field"><label for="createLoader">LOADER</label><div class="select-wrap"><select id="createLoader"><option value="fabric">Fabric</option><option value="forge">Forge</option><option value="neoforge">NeoForge</option></select></div></div><div class="create-field"><label for="createVersion">MINECRAFT VERSION</label><input id="createVersion" list="minecraftVersions" value="1.21.1" placeholder="1.21.1"><datalist id="minecraftVersions"><option value="1.21.11"><option value="1.21.10"><option value="1.21.1"><option value="1.21"><option value="1.20.6"><option value="1.20.4"><option value="1.20.1"><option value="1.19.4"><option value="1.19.2"><option value="1.18.2"><option value="1.16.5"><option value="1.12.2"></datalist></div><button id="generateModButton" type="button">צור את המוד <span>✦</span></button></div>
+          <div class="create-options"><div class="create-field"><label for="createLoader">LOADER</label><div class="select-wrap"><select id="createLoader"><option value="fabric">Fabric</option><option value="forge">Forge</option><option value="neoforge">NeoForge</option></select></div></div><div class="create-field"><label for="createVersion">MINECRAFT VERSION</label><input id="createVersion" list="minecraftVersions" value="1.21.1" placeholder="1.21.1"><datalist id="minecraftVersions"><option value="1.21.11"><option value="1.21.10"><option value="1.21.9"><option value="1.21.8"><option value="1.21.7"><option value="1.21.6"><option value="1.21.5"><option value="1.21.4"><option value="1.21.3"><option value="1.21.2"><option value="1.21.1"><option value="1.21"><option value="1.20.6"><option value="1.20.4"><option value="1.20.2"><option value="1.20.1"><option value="1.19.4"><option value="1.19.3"><option value="1.19.2"><option value="1.19.1"><option value="1.19"><option value="1.18.2"><option value="1.18.1"><option value="1.18"><option value="1.17.1"><option value="1.16.5"><option value="1.15.2"><option value="1.14.4"><option value="1.13.2"><option value="1.12.2"><option value="1.11.2"><option value="1.10.2"><option value="1.9.4"><option value="1.8.9"></datalist></div><button id="generateModButton" type="button">צור את המוד <span>✦</span></button></div>
           <div class="create-result" id="createResult"></div>
         </div>
         <div class="mod-grid" id="modGrid"></div>
