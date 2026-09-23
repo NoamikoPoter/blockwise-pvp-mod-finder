@@ -133,7 +133,7 @@ async function askLocalAi() {
   const query = question.includes('crystal') || question.includes('קריסטל') ? 'crystal' : (question || onlineQueries[styleSelect.value]);
   try {
     const facets = encodeURIComponent('[["project_type:mod"]]');
-    const url = `https://api.modrinth.com/v2/search?query=${encodeURIComponent(query)}&facets=${facets}&limit=5&index=relevance`;
+    const url = `https://api.modrinth.com/v2/search?query=${encodeURIComponent(query)}&facets=${facets}&limit=12&index=relevance`;
     const response = await fetch(url);
     if (!response.ok) throw new Error('Online search failed');
     const data = await response.json();
@@ -144,7 +144,7 @@ async function askLocalAi() {
     renderOnlineMods(hits);
     const version = document.querySelector('#versionLabel').textContent;
     aiAnswer.textContent += ` הנה ${hits.length} מודים שמצאתי ב-Modrinth שמתאימים ככל האפשר ל-${requestedLoader}.`;
-    aiTip.textContent = `בדיקה חשובה: התוצאות מציגות גרסאות זמינות כמו ${hits[0].versions?.slice(-3).join(', ') || 'לא ידוע'}, אבל לפני התקנה בדוק בעמוד המוד התאמה מדויקת ל-${version} ולשרת שלך.`;
+    aiTip.textContent = `בדיקה חשובה: ה-AI עבר על ${hits.length} מודים. התוצאות מציגות גרסאות זמינות כמו ${hits[0].versions?.slice(-3).join(', ') || 'לא ידוע'}, אבל לפני התקנה בדוק בעמוד המוד התאמה מדויקת ל-${version} ולשרת שלך.`;
   } catch {
     aiResults.innerHTML = '<span class="online-mod-meta">החיפוש באינטרנט לא זמין כרגע, אז הצגתי את ההמלצות המקומיות.</span>';
     aiTip.textContent = 'כשהחיפוש יחזור, ה-AI יציג גם loader, גרסאות ומספר הורדות לכל מוד.';
