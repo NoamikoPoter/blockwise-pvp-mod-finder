@@ -81,6 +81,14 @@ const styleSelect = document.querySelector('#styleSelect');
 const loaderSelect = document.querySelector('#loaderSelect');
 const contentTypeSelect = document.querySelector('#contentTypeSelect');
 const versionSelect = document.querySelector('#versionSelect');
+const newestVersions = ['26.3', '26.2', '26.1.2', '26.1.1', '26.1'];
+newestVersions.forEach((version) => {
+  if (![...versionSelect.options].some((option) => option.value === version)) {
+    versionSelect.insertBefore(new Option(version, version), versionSelect.firstElementChild);
+  }
+  const versionList = document.querySelector('#minecraftVersions');
+  if (versionList && ![...versionList.options].some((option) => option.value === version)) versionList.insertBefore(new Option(version, version), versionList.firstElementChild);
+});
 const modGrid = document.querySelector('#modGrid');
 const resultStatus = document.querySelector('#resultStatus');
 const resultNumber = document.querySelector('#resultNumber');
