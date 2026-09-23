@@ -40,6 +40,8 @@ body { margin: 0; color: var(--ink); background: var(--paper); font-family: 'Ass
 .random-button { width: 100%; border: 1px solid var(--orange); background: transparent; color: var(--orange); padding: 11px 14px; display: flex; justify-content: space-between; align-items: center; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1.5px; font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: background .2s, color .2s; }
 .random-button:hover { background: var(--orange); color: #171312; }
 .random-button b { font-size: 16px; }
+.create-mode-button { width: 100%; border: 1px solid #a78cff; background: transparent; color: #c0adff; padding: 11px 14px; display: flex; justify-content: space-between; align-items: center; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1.5px; font-size: 12px; font-weight: 700; cursor: pointer; margin-top: 8px; transition: background .2s, color .2s; }.create-mode-button:hover { background: #a78cff; color: #16131f; }.create-mode-button b { font-size: 17px; }
+.create-panel { border: 1px solid #55477d; background: #1b1826; padding: 16px; margin-bottom: 20px; }.create-panel textarea { width: 100%; resize: vertical; border: 1px solid #403752; background: #121017; color: var(--ink); padding: 11px; margin-top: 14px; font: inherit; font-size: 12px; outline: none; }.create-panel textarea:focus { border-color: #a78cff; }.create-options { display: flex; gap: 8px; margin-top: 9px; }.create-options .select-wrap { flex: 1; }.create-options button { border: 1px solid #a78cff; background: #a78cff; color: #17131f; padding: 0 15px; font: inherit; font-size: 11px; font-weight: 800; cursor: pointer; }.create-options button:hover { background: #c0adff; }.create-result { color: #c5bdd8; font-size: 12px; line-height: 1.6; margin-top: 14px; }.create-result:empty { display: none; }.blueprint-title { color: #c0adff; font-weight: 800; font-size: 14px; }.blueprint-meta { color: #8c819f; font-size: 10px; display: block; margin-top: 3px; }.blueprint-features { color: #d8d0e9; margin: 9px 0; padding-right: 18px; }.download-blueprint { display: inline-block; color: #c0adff; border: 1px solid #6e5d99; padding: 7px 10px; text-decoration: none; font-size: 11px; }.download-blueprint:hover { background: rgba(167,140,255,.12); }
 .ai-tip { color: #7f9288; font-size: 10px; line-height: 1.5; margin-top: 6px; }
 .ai-results { display: grid; gap: 7px; margin-top: 12px; }
 .online-mod { display: flex; align-items: center; gap: 10px; border-top: 1px solid #2d3933; padding-top: 9px; text-decoration: none; }
@@ -51,3 +53,18 @@ body { margin: 0; color: var(--ink); background: var(--paper); font-family: 'Ass
 .source-heading { color: var(--orange); font-family: 'Barlow Condensed'; font-size: 12px; letter-spacing: .5px; border-top: 1px solid #2d3933; padding-top: 12px; margin-top: 9px; }
 .reddit-mod .online-mod-rank { color: var(--orange); }
 .youtube-mod .online-mod-rank { color: #ff4d4d; }
+.create-panel { position: relative; overflow: hidden; border-color: #69549c; background: linear-gradient(135deg, #211c2d 0%, #17151f 58%, #1e1a2a 100%); box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 12px 30px rgba(0,0,0,.14); }
+.create-panel::before { content: ''; position: absolute; top: 0; right: 0; left: 0; height: 3px; background: #a78cff; }
+.create-panel .ai-heading { padding-top: 3px; }
+.create-panel .ai-spark { width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid #8068bc; color: #cdbdff; font-size: 22px; }
+.create-panel .ai-heading strong { color: #d4c8ff; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px; font-size: 16px; }
+.create-panel textarea { min-height: 82px; border-color: #4a3d66; line-height: 1.6; }
+.create-panel textarea::placeholder { color: #746b85; }
+.create-options { align-items: stretch; }
+.create-options .select-wrap select { border-color: #4a3d66; background: #14121b; }
+.create-options button { min-width: 130px; letter-spacing: .2px; }
+.create-result { border-top: 1px solid #3e3453; padding-top: 13px; }
+.blueprint-title { display: block; font-family: 'Barlow Condensed', sans-serif; letter-spacing: .5px; font-size: 18px; }
+.blueprint-features { color: #d8d0e9; background: rgba(0,0,0,.12); padding: 10px 25px 10px 10px; border-right: 2px solid #a78cff; }
+.download-blueprint { margin-top: 2px; }
+@media (max-width: 520px) { .create-options { flex-direction: column; }.create-options button { min-height: 40px; } }
