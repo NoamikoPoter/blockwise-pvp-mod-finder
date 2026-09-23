@@ -94,7 +94,8 @@ const onlineQueries = {
   crystal: 'crystal pvp minecraft',
   sword: 'sword pvp minecraft',
   bed: 'bedwars pvp minecraft',
-  uhc: 'uhc pvp minecraft'
+  uhc: 'uhc pvp minecraft',
+  fun: 'minecraft fun extras guns herobrine'
 };
 
 const aiSearchKnowledge = [
@@ -104,12 +105,14 @@ const aiSearchKnowledge = [
   { words: ['armor', 'armour', 'שריון'], queries: ['armor hud', 'armor durability', 'pvp hud'] },
   { words: ['sword', 'חרב', 'combo', 'קומבו'], queries: ['sword pvp', 'pvp combo', 'combat hud'] },
   { words: ['ping', 'פינג', 'lag', 'לאג'], queries: ['ping display', 'network pvp', 'lag reduction'] },
-  { words: ['fps', 'performance', 'ביצועים', 'תקיעות'], queries: ['minecraft performance', 'pvp fps', 'client optimization'] }
+  { words: ['fps', 'performance', 'ביצועים', 'תקיעות'], queries: ['minecraft performance', 'pvp fps', 'client optimization'] },
+  { words: ['gun', 'guns', 'רובים', 'herobrine', 'הירובריין', 'scary', 'מצחיק'], queries: ['minecraft guns', 'herobrine minecraft', 'fun minecraft mods'] }
 ];
 
 function getOnlineSearchQueries(question) {
   const normalized = question.toLowerCase().replace(/\s+/g, ' ').trim();
-  const queries = [onlineQueries[styleSelect.value]];
+  const baseQuery = contentTypeSelect.value === 'fun' ? onlineQueries.fun : onlineQueries[styleSelect.value];
+  const queries = [baseQuery];
   if (normalized) queries.unshift(normalized);
   aiSearchKnowledge.forEach((entry) => {
     if (entry.words.some((word) => normalized.includes(word))) queries.push(...entry.queries);
@@ -145,7 +148,13 @@ function getLocalAiRecommendation() {
   if (question.includes('שריון') || question.includes('עמידות') || question.includes('קרב')) focus = 'מידע שיעזור לך בזמן הקרב';
   if (question.includes('קריסטל') || question.includes('crystal')) focus = 'שליטה ב-Crystal PvP';
   const picks = sortedMods.slice(0, styleSelect.value === 'crystal' ? 3 : 2).map((mod) => mod.name).join(', ');
+  if (contentTypeSelect.value === 'fun') return 'הבנתי שאתה מחפש תוספת כיפית כמו רובים, Herobrine או דברים מצחיקים. עכשיו אני מחפש תוכן אמיתי ב-Modrinth, Reddit וב-YouTube.';
   return `לפי מה שבחרת, הייתי מתחיל עם ${picks}. הם מתאימים ל${focus}. עכשיו אני מחפש גם מודים אמיתיים באינטרנט שמתאימים לזה.`;
+}
+
+function updateContentLabel() {
+  const labels = { mod: 'מודים', modpack: 'Modpacks', resourcepack: 'Resource Packs', shader: 'Shaders', fun: 'תוספות כיפיות', all: 'פריטים' };
+  document.querySelector('#resultTypeLabel').textContent = labels[contentTypeSelect.value];
 }
 
 function renderOnlineMods(hits) {
@@ -176,8 +185,9 @@ async function askLocalAi() {
   const question = aiQuestion.value.trim();
   const searchQueries = getOnlineSearchQueries(question);
   const requestedType = contentTypeSelect.value;
+  const apiType = requestedType === 'fun' ? 'all' : requestedType;
   try {
-    const facets = requestedType === 'all' ? '' : encodeURIComponent(`[["project_type:${requestedType}"]]`);
+    const facets = apiType === 'all' ? '' : encodeURIComponent(`[["project_type:${apiType}"]]`);
     const requestedLoader = loaderSelect.value;
     const version = document.querySelector('#versionLabel').textContent;
     const responses = await Promise.allSettled(searchQueries.map(async (query) => {
@@ -189,7 +199,7 @@ async function askLocalAi() {
     }));
     const uniqueMods = new Map();
     responses.filter((result) => result.status === 'fulfilled').flatMap((result) => result.value.hits || []).forEach((mod) => {
-      if ((requestedType === 'all' || mod.project_type === requestedType) && !uniqueMods.has(mod.project_id)) uniqueMods.set(mod.project_id, mod);
+      if ((apiType === 'all' || mod.project_type === apiType) && !uniqueMods.has(mod.project_id)) uniqueMods.set(mod.project_id, mod);
     });
     const hits = [...uniqueMods.values()]
       .sort((a, b) => scoreOnlineMod(b, question, requestedLoader, version) - scoreOnlineMod(a, question, requestedLoader, version))
@@ -206,7 +216,7 @@ async function askLocalAi() {
     renderOnlineMods(hits);
     aiResults.insertAdjacentHTML('beforeend', renderRedditResults(redditPosts));
     aiResults.insertAdjacentHTML('beforeend', renderYoutubeSearch(question || searchQueries[0]));
-    const contentLabel = requestedType === 'modpack' ? 'modpacks' : requestedType === 'resourcepack' ? 'resource packs' : requestedType === 'shader' ? 'shaders' : requestedType === 'all' ? 'סוגי תוכן' : 'מודים';
+    const contentLabel = requestedType === 'modpack' ? 'modpacks' : requestedType === 'resourcepack' ? 'resource packs' : requestedType === 'shader' ? 'shaders' : requestedType === 'fun' ? 'תוספות כיפיות' : requestedType === 'all' ? 'סוגי תוכן' : 'מודים';
     aiAnswer.textContent += ` חיפשתי ${searchQueries.length} ניסוחים במאגר Modrinth, ב-Reddit וב-YouTube, ומצאתי ${hits.length} ${contentLabel} ו-${redditPosts.length} דיוני קהילה.`;
     aiTip.textContent = `ה-AI בדק עד ${searchQueries.length * 100} תוצאות, הסיר כפילויות ודירג לפי מילות השאלה, סוג התוכן, loader וגרסת ${version}. דיוני Reddit הם רעיונות מהקהילה, לכן בדוק תמיד את עמוד התוכן וההרשאות שלו.`;
   } catch {
@@ -247,6 +257,7 @@ styleSelect.addEventListener('change', renderMods);
 loaderSelect.addEventListener('change', renderMods);
 contentTypeSelect.addEventListener('change', () => {
   aiTip.textContent = 'ה-AI יחפש את סוג התוכן שבחרת ב-Modrinth, יחד עם Reddit ו-YouTube.';
+  updateContentLabel();
 });
 document.querySelector('#searchButton').addEventListener('click', () => {
   renderMods();
@@ -270,4 +281,5 @@ document.querySelector('#aiAskButton').addEventListener('click', askLocalAi);
 aiQuestion.addEventListener('keydown', (event) => {
   if (event.key === 'Enter') askLocalAi();
 });
+updateContentLabel();
 renderMods();
