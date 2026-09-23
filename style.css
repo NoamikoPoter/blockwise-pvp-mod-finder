@@ -61,7 +61,7 @@ body { margin: 0; color: var(--ink); background: var(--paper); font-family: 'Ass
 .create-panel textarea { min-height: 82px; border-color: #4a3d66; line-height: 1.6; }
 .create-panel textarea::placeholder { color: #746b85; }
 .create-options { align-items: stretch; }
-.create-options .select-wrap select { border-color: #4a3d66; background: #14121b; }
+.create-field { flex: 1; min-width: 0; }.create-field label { display: block; color: #8f82a9; font-family: 'Barlow Condensed', sans-serif; font-size: 9px; letter-spacing: 1px; margin-bottom: 5px; }.create-field .select-wrap select, .create-field input { width: 100%; height: 39px; border: 1px solid #4a3d66; background: #14121b; color: var(--ink); padding: 0 10px; font: inherit; font-size: 11px; outline: none; }.create-field input:focus, .create-field .select-wrap select:focus { border-color: #a78cff; }
 .create-options button { min-width: 130px; letter-spacing: .2px; }
 .create-result { border-top: 1px solid #3e3453; padding-top: 13px; }
 .blueprint-title { display: block; font-family: 'Barlow Condensed', sans-serif; letter-spacing: .5px; font-size: 18px; }

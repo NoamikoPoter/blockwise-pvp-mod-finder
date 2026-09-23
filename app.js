@@ -264,7 +264,7 @@ function createModBlueprint() {
   }
   const normalized = prompt.toLowerCase();
   const loader = document.querySelector('#createLoader').value;
-  const version = document.querySelector('#versionLabel').textContent;
+  const version = document.querySelector('#createVersion').value.trim() || document.querySelector('#versionLabel').textContent;
   const isGun = normalized.includes('gun') || normalized.includes('רוב') || normalized.includes('נשק');
   const isHerobrine = normalized.includes('herobrine') || normalized.includes('הירובריין');
   const isCrystal = normalized.includes('crystal') || normalized.includes('קריסטל');
